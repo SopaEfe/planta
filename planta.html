@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>🌿 Mi Planta</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --verde-oscuro: #1a2e1a;
+      --verde-medio: #2d5a27;
+      --verde-claro: #4a8c3f;
+      --verde-menta: #7ec67a;
+      --crema: #f5f0e8;
+      --arena: #e8dfc8;
+      --tierra: #8b6914;
+      --alerta: #d4a017;
+      --rojo: #c0392b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--verde-oscuro);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Fondo con textura orgánica */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(74,140,63,0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(45,90,39,0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at 60% 10%, rgba(126,198,122,0.08) 0%, transparent 40%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Hojas decorativas */
+    .leaf {
+      position: fixed;
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .leaf-1 { top: -40px; right: -20px; font-size: 180px; transform: rotate(-30deg); }
+    .leaf-2 { bottom: -30px; left: -30px; font-size: 160px; transform: rotate(40deg); }
+    .leaf-3 { top: 40%; left: -20px; font-size: 100px; transform: rotate(15deg); }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding-bottom: 4px;
+    }
+
+    .plant-icon {
+      font-size: 72px;
+      line-height: 1;
+      display: block;
+      margin-bottom: 8px;
+      animation: float 4s ease-in-out infinite;
+      filter: drop-shadow(0 8px 20px rgba(126,198,122,0.3));
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      color: var(--crema);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--verde-menta);
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Card principal */
+    .card {
+      background: rgba(245, 240, 232, 0.05);
+      border: 1px solid rgba(126,198,122,0.15);
+      border-radius: 24px;
+      padding: 28px 24px;
+      width: 100%;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Estado principal */
+    .estado {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .estado-label {
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--verde-menta);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .dias-numero {
+      font-family: 'Playfair Display', serif;
+      font-size: 72px;
+      line-height: 1;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--crema) 0%, var(--verde-menta) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .dias-texto {
+      font-size: 15px;
+      color: rgba(245,240,232,0.6);
+      font-weight: 300;
+      margin-top: 2px;
+    }
+
+    /* Barra de progreso */
+    .progreso-container {
+      margin-bottom: 20px;
+    }
+
+    .progreso-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .progreso-label span {
+      font-size: 12px;
+      font-weight: 300;
+    }
+
+    .progreso-label .prog-left {
+      color: rgba(245,240,232,0.5);
+    }
+
+    .progreso-label .prog-right {
+      font-weight: 500;
+    }
+
+    .barra-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .barra-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .barra-fill::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: inherit;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    /* Próximo riego */
+    .proximo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .proximo-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .proximo-info {
+      flex: 1;
+    }
+
+    .proximo-titulo {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.4);
+      font-weight: 500;
+    }
+
+    .proximo-valor {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--crema);
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .proximo-fecha {
+      font-size: 12px;
+      color: rgba(245,240,232,0.4);
+      margin-top: 1px;
+      font-weight: 300;
+    }
+
+    /* Sin datos */
+    .sin-datos {
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .sin-datos p {
+      color: rgba(245,240,232,0.5);
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .sin-datos .emoji {
+      font-size: 36px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    /* Botón regar */
+    .btn-regar {
+      width: 100%;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--verde-claro) 0%, var(--verde-medio) 100%);
+      border: none;
+      border-radius: 20px;
+      color: var(--crema);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      box-shadow: 0 8px 24px rgba(74,140,63,0.35), 0 2px 4px rgba(0,0,0,0.2);
+      letter-spacing: 0.3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-regar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      border-radius: inherit;
+    }
+
+    .btn-regar:active {
+      transform: scale(0.97);
+      box-shadow: 0 4px 12px rgba(74,140,63,0.25);
+    }
+
+    .btn-regar .btn-icon {
+      font-size: 22px;
+    }
+
+    /* Animación del botón al presionar */
+    @keyframes ripple {
+      0% { transform: scale(0); opacity: 1; }
+      100% { transform: scale(4); opacity: 0; }
+    }
+
+    .ripple-effect {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      width: 100px;
+      height: 100px;
+      margin-top: -50px;
+      margin-left: -50px;
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+
+    /* Toast notificación */
+    .toast {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: var(--verde-menta);
+      color: var(--verde-oscuro);
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Última vez */
+    .ultima-vez {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(245,240,232,0.3);
+      font-weight: 300;
+      letter-spacing: 0.3px;
+    }
+
+    /* Estado urgente */
+    .urgente .dias-numero {
+      background: linear-gradient(135deg, #ff9a9a 0%, #c0392b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .urgente .barra-fill {
+      background: linear-gradient(90deg, #e74c3c, #c0392b);
+      box-shadow: 0 0 10px rgba(192,57,43,0.5);
+    }
+
+    /* Estado alerta */
+    .alerta-prog .barra-fill {
+      background: linear-gradient(90deg, var(--alerta), #e67e22);
+      box-shadow: 0 0 10px rgba(212,160,23,0.5);
+    }
+
+    /* Estado bien */
+    .bien-prog .barra-fill {
+      background: linear-gradient(90deg, var(--verde-menta), var(--verde-claro));
+      box-shadow: 0 0 10px rgba(126,198,122,0.4);
+    }
+
+    /* Historial link */
+    .historial-btn {
+      background: none;
+      border: none;
+      color: rgba(245,240,232,0.3);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      transition: color 0.2s;
+    }
+
+    .historial-btn:active {
+      color: rgba(245,240,232,0.6);
+    }
+
+    /* Modal historial */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,20,10,0.85);
+      z-index: 50;
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      width: 100%;
+      background: #1e321e;
+      border-radius: 24px 24px 0 0;
+      padding: 28px 24px 40px;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-top: 1px solid rgba(126,198,122,0.2);
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open .modal {
+      transform: translateY(0);
+    }
+
+    .modal-handle {
+      width: 40px;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 100px;
+      margin: 0 auto 20px;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--crema);
+      margin-bottom: 16px;
+    }
+
+    .historial-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .historial-item:last-child {
+      border-bottom: none;
+    }
+
+    .hist-icon { font-size: 20px; }
+
+    .hist-info { flex: 1; }
+
+    .hist-fecha {
+      font-size: 14px;
+      color: var(--crema);
+      font-weight: 500;
+    }
+
+    .hist-hace {
+      font-size: 12px;
+      color: rgba(245,240,232,0.4);
+      font-weight: 300;
+      margin-top: 1px;
+    }
+
+    .hist-vacio {
+      text-align: center;
+      color: rgba(245,240,232,0.4);
+      font-size: 14px;
+      padding: 20px 0;
+    }
+
+    .modal-close {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      color: var(--crema);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="leaf leaf-1">🌿</div>
+  <div class="leaf leaf-2">🌱</div>
+  <div class="leaf leaf-3">🍃</div>
+
+  <div class="toast" id="toast">💧 ¡Planta regada!</div>
+
+  <div class="container">
+
+    <div class="header">
+      <span class="plant-icon">🪴</span>
+      <h1 class="title">Mi Planta</h1>
+      <p class="subtitle">Riego cada 10 días</p>
+    </div>
+
+    <div class="card" id="cardEstado">
+      <!-- Se llena con JS -->
+    </div>
+
+    <button class="btn-regar" id="btnRegar" onclick="registrarRiego(event)">
+      <span class="btn-icon">💧</span>
+      Regar ahora
+    </button>
+
+    <button class="historial-btn" onclick="abrirHistorial()">Ver historial</button>
+
+  </div>
+
+  <!-- Modal historial -->
+  <div class="modal-overlay" id="modalOverlay" onclick="cerrarHistorial(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">💧 Historial de riegos</h2>
+      <div id="historialLista"></div>
+      <button class="modal-close" onclick="cerrarHistorial()">Cerrar</button>
+    </div>
+  </div>
+
+  <script>
+    const CLAVE = 'planta_riego_v1';
+    const INTERVALO_DIAS = 10;
+
+    function getData() {
+      try {
+        const raw = localStorage.getItem(CLAVE);
+        return raw ? JSON.parse(raw) : { riegos: [] };
+      } catch { return { riegos: [] }; }
+    }
+
+    function saveData(data) {
+      localStorage.setItem(CLAVE, JSON.stringify(data));
+    }
+
+    function diasDesde(fechaISO) {
+      const ahora = new Date();
+      const fecha = new Date(fechaISO);
+      const diff = ahora - fecha;
+      return Math.floor(diff / (1000 * 60 * 60 * 24));
+    }
+
+    function horasDesde(fechaISO) {
+      const ahora = new Date();
+      const fecha = new Date(fechaISO);
+      return (ahora - fecha) / (1000 * 60 * 60);
+    }
+
+    function formatearFecha(fechaISO) {
+      const f = new Date(fechaISO);
+      const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+      const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      return `${dias[f.getDay()]} ${f.getDate()} ${meses[f.getMonth()]} ${f.getFullYear()}`;
+    }
+
+    function formatearHora(fechaISO) {
+      const f = new Date(fechaISO);
+      return f.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderCard() {
+      const data = getData();
+      const card = document.getElementById('cardEstado');
+
+      if (data.riegos.length === 0) {
+        card.innerHTML = `
+          <div class="sin-datos">
+            <span class="emoji">🌵</span>
+            <p>Todavía no registraste ningún riego.<br>¡Presioná el botón cuando riegues!</p>
+          </div>
+        `;
+        return;
+      }
+
+      const ultimo = data.riegos[data.riegos.length - 1];
+      const diasPasados = diasDesde(ultimo);
+      const horasPasadas = horasDesde(ultimo);
+      const diasRestantes = INTERVALO_DIAS - diasPasados;
+
+      let textoRestantes, colorClass, iconoProximo, textoProximo;
+
+      if (diasPasados === 0 && horasPasadas < 1) {
+        textoRestantes = '¡Recién regada!';
+        colorClass = 'bien-prog';
+        iconoProximo = '✅';
+        textoProximo = `En ${INTERVALO_DIAS} días`;
+      } else if (diasRestantes > 3) {
+        textoRestantes = `${diasRestantes} días restantes`;
+        colorClass = 'bien-prog';
+        iconoProximo = '🗓️';
+        textoProximo = `En ${diasRestantes} días`;
+      } else if (diasRestantes > 0) {
+        textoRestantes = `¡Casi es hora!`;
+        colorClass = 'alerta-prog';
+        iconoProximo = '⚠️';
+        textoProximo = diasRestantes === 1 ? '¡Mañana!' : `En ${diasRestantes} días`;
+      } else if (diasRestantes === 0) {
+        textoRestantes = '¡Hoy hay que regar!';
+        colorClass = 'alerta-prog';
+        iconoProximo = '💧';
+        textoProximo = '¡Hoy!';
+      } else {
+        textoRestantes = `Atrasada ${Math.abs(diasRestantes)} días`;
+        colorClass = 'urgente';
+        iconoProximo = '🚨';
+        textoProximo = `Hace ${Math.abs(diasRestantes)} días`;
+      }
+
+      const porcentaje = Math.min(100, (diasPasados / INTERVALO_DIAS) * 100);
+
+      // Calcular fecha del próximo riego
+      const fechaUltimo = new Date(ultimo);
+      const fechaProximo = new Date(fechaUltimo);
+      fechaProximo.setDate(fechaProximo.getDate() + INTERVALO_DIAS);
+      const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      const textoFechaProximo = `${fechaProximo.getDate()} ${meses[fechaProximo.getMonth()]}`;
+
+      const textosDias = diasPasados === 0 ? 'hoy' : diasPasados === 1 ? 'hace 1 día' : `hace ${diasPasados} días`;
+
+      card.innerHTML = `
+        <div class="estado ${diasRestantes <= 0 ? 'urgente' : ''}">
+          <div class="estado-label">Último riego</div>
+          <div class="dias-numero">${diasPasados}</div>
+          <div class="dias-texto">${diasPasados === 1 ? 'día atrás' : diasPasados === 0 ? 'hoy mismo' : 'días atrás'}</div>
+        </div>
+
+        <div class="progreso-container ${colorClass}">
+          <div class="progreso-label">
+            <span class="prog-left">Ciclo de ${INTERVALO_DIAS} días</span>
+            <span class="prog-right" style="color: ${diasRestantes <= 0 ? '#e74c3c' : diasRestantes <= 3 ? '#d4a017' : '#7ec67a'}">${Math.round(porcentaje)}%</span>
+          </div>
+          <div class="barra-track">
+            <div class="barra-fill" id="barraFill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="proximo">
+          <span class="proximo-icon">${iconoProximo}</span>
+          <div class="proximo-info">
+            <div class="proximo-titulo">Próximo riego</div>
+            <div class="proximo-valor">${textoProximo}</div>
+            <div class="proximo-fecha">${textoFechaProximo} · ${textoRestantes}</div>
+          </div>
+        </div>
+      `;
+
+      // Animar barra después de render
+      setTimeout(() => {
+        const barra = document.getElementById('barraFill');
+        if (barra) barra.style.width = porcentaje + '%';
+      }, 100);
+    }
+
+    function registrarRiego(e) {
+      const btn = document.getElementById('btnRegar');
+      
+      // Ripple effect
+      if (e) {
+        const rect = btn.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple-effect';
+        ripple.style.left = (e.clientX - rect.left) + 'px';
+        ripple.style.top = (e.clientY - rect.top) + 'px';
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 700);
+      }
+
+      const data = getData();
+      data.riegos.push(new Date().toISOString());
+      // Mantener solo los últimos 30 registros
+      if (data.riegos.length > 30) data.riegos = data.riegos.slice(-30);
+      saveData(data);
+
+      // Animar icono planta
+      const icon = document.querySelector('.plant-icon');
+      icon.style.transform = 'scale(1.2)';
+      icon.style.filter = 'drop-shadow(0 8px 24px rgba(126,198,122,0.6))';
+      setTimeout(() => {
+        icon.style.transform = '';
+        icon.style.filter = '';
+      }, 400);
+
+      // Toast
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+
+      renderCard();
+    }
+
+    function abrirHistorial() {
+      const data = getData();
+      const lista = document.getElementById('historialLista');
+
+      if (data.riegos.length === 0) {
+        lista.innerHTML = '<p class="hist-vacio">Aún no hay registros de riego.</p>';
+      } else {
+        const invertidos = [...data.riegos].reverse();
+        lista.innerHTML = invertidos.map((fecha, i) => {
+          const dias = diasDesde(fecha);
+          const textoHace = dias === 0 ? 'Hoy' : dias === 1 ? 'Ayer' : `Hace ${dias} días`;
+          return `
+            <div class="historial-item">
+              <span class="hist-icon">${i === 0 ? '💧' : '🫙'}</span>
+              <div class="hist-info">
+                <div class="hist-fecha">${formatearFecha(fecha)} · ${formatearHora(fecha)}</div>
+                <div class="hist-hace">${textoHace}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+
+    function cerrarHistorial(e) {
+      if (!e || e.target === document.getElementById('modalOverlay') || e.target.className === 'modal-close') {
+        document.getElementById('modalOverlay').classList.remove('open');
+      }
+    }
+
+    // Init
+    renderCard();
+  </script>
+</body>
+</html>
